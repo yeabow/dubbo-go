@@ -201,6 +201,11 @@ func (dir *RegistryDirectory) toGroupInvokers() []protocol.Invoker {
 func (dir *RegistryDirectory) uncacheInvoker(url *common.URL) protocol.Invoker {
 	logger.Debugf("service will be deleted in cache invokers: invokers key is  %s!", url.Key())
 	if cacheInvoker, ok := dir.cacheInvokersMap.Load(url.Key()); ok {
+		invoker := cacheInvoker.(protocol.Invoker)
+		invokerUrl := invoker.GetUrl()
+		if  &invokerUrl != url {
+			return nil
+		}
 		dir.cacheInvokersMap.Delete(url.Key())
 		return cacheInvoker.(protocol.Invoker)
 	}
