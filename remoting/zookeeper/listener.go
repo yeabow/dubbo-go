@@ -174,37 +174,20 @@ func (l *ZkEventListener) handleZkNodeEvent(zkPath string, children []string, li
 		}(newNode, zkPath, listener)
 	}
 
-	getServiceURL := func(path string) common.URL {
-		index := strings.Index(path, "/providers/")
-		url := path[index+len("/providers/"):]
-		newServiceURL, _ := common.NewURL(url)
-		return newServiceURL
-	}
-
-	if newNode != "" {
-		newServiceKey := getServiceURL(newNode).ServiceKey()
-		// old node was deleted
-		var oldNode string
-		var oldServiceKey string
-		for _, n := range children {
-			if contains(newChildren, n) {
-				continue
-			}
-
-			oldNode = path.Join(zkPath, n)
-			oldServiceKey = getServiceURL(oldNode).ServiceKey()
-			if oldServiceKey == newServiceKey {
-				logger.Warnf("delete zkPath{%s} return!", oldNode)
-				continue
-			}
-
-			logger.Warnf("delete zkPath{%s}", oldNode)
-			if err != nil {
-				logger.Errorf("NewURL(i{%s}) = error{%v}", n, perrors.WithStack(err))
-				continue
-			}
-			listener.DataChange(remoting.Event{Path: oldNode, Action: remoting.EventTypeDel})
+	// old node was deleted
+	var oldNode string
+	for _, n := range children {
+		if contains(newChildren, n) {
+			continue
 		}
+
+		oldNode = path.Join(zkPath, n)
+		logger.Warnf("delete zkPath{%s}", oldNode)
+		if err != nil {
+			logger.Errorf("NewURL(i{%s}) = error{%v}", n, perrors.WithStack(err))
+			continue
+		}
+		listener.DataChange(remoting.Event{Path: oldNode, Action: remoting.EventTypeDel})
 	}
 }
 
