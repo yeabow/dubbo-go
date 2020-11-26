@@ -20,6 +20,7 @@ package dubbo
 import (
 	"bytes"
 	"reflect"
+	"strings"
 )
 
 import (
@@ -151,11 +152,17 @@ func (p *RpcServerPackageHandler) Read(ss getty.Session, data []byte) (interface
 			if pkg.Service.Path == "" && len(attachments[constant.PATH_KEY]) > 0 {
 				pkg.Service.Path = attachments[constant.PATH_KEY]
 			}
-			if _, ok := attachments[constant.INTERFACE_KEY]; ok {
-				pkg.Service.Interface = attachments[constant.INTERFACE_KEY]
+
+			if strings.Index(pkg.Service.Path, ".") == -1 {
+				if _, ok := attachments[constant.INTERFACE_KEY]; ok {
+					pkg.Service.Interface = attachments[constant.INTERFACE_KEY]
+				} else {
+					pkg.Service.Interface = pkg.Service.Path
+				}
 			} else {
 				pkg.Service.Interface = pkg.Service.Path
 			}
+
 			if len(attachments[constant.GROUP_KEY]) > 0 {
 				pkg.Service.Group = attachments[constant.GROUP_KEY]
 			}
