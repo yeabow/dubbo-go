@@ -120,15 +120,21 @@ func (m *MethodType) SuiteContext(ctx context.Context) reflect.Value {
 
 // Service is description of service
 type Service struct {
-	name     string
-	rcvr     reflect.Value
-	rcvrType reflect.Type
-	methods  map[string]*MethodType
+	name          string
+	interfaceName string
+	rcvr          reflect.Value
+	rcvrType      reflect.Type
+	methods       map[string]*MethodType
 }
 
 // Method gets @s.methods.
 func (s *Service) Method() map[string]*MethodType {
 	return s.methods
+}
+
+// Method gets @s.interfaceName.
+func (s *Service) GetInterfaceName() string {
+	return s.interfaceName
 }
 
 // Name will return service name
@@ -189,6 +195,7 @@ func (sm *serviceMap) Register(interfaceName, protocol string, rcvr RPCService) 
 	}
 
 	s := new(Service)
+	s.interfaceName = interfaceName
 	s.rcvrType = reflect.TypeOf(rcvr)
 	s.rcvr = reflect.ValueOf(rcvr)
 	sname := reflect.Indirect(s.rcvr).Type().Name()

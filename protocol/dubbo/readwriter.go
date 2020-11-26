@@ -153,24 +153,30 @@ func (p *RpcServerPackageHandler) Read(ss getty.Session, data []byte) (interface
 				pkg.Service.Path = attachments[constant.PATH_KEY]
 			}
 
-			if strings.Index(pkg.Service.Path, ".") == -1 {
-				if _, ok := attachments[constant.INTERFACE_KEY]; ok {
-					pkg.Service.Interface = attachments[constant.INTERFACE_KEY]
+			service := common.ServiceMap.GetService(DUBBO, pkg.Service.Path) // path as a key
+			if service == nil {
+				if strings.Index(pkg.Service.Path, ".") == -1 {
+					if _, ok := attachments[constant.INTERFACE_KEY]; ok {
+						pkg.Service.Interface = attachments[constant.INTERFACE_KEY]
+					} else {
+						pkg.Service.Interface = pkg.Service.Path
+					}
 				} else {
 					pkg.Service.Interface = pkg.Service.Path
 				}
 			} else {
-				pkg.Service.Interface = pkg.Service.Path
+				pkg.Service.Interface = service.GetInterfaceName()
 			}
 
 			if len(attachments[constant.GROUP_KEY]) > 0 {
 				pkg.Service.Group = attachments[constant.GROUP_KEY]
 			}
+
 			pkg.Body = map[string]interface{}{
 				"dubboVersion": dubboVersion,
 				"argsTypes":    argsTypes,
 				"args":         args,
-				"service":      common.ServiceMap.GetService(DUBBO, pkg.Service.Path), // path as a key
+				"service":      service,
 				"attachments":  attachments,
 			}
 		}
